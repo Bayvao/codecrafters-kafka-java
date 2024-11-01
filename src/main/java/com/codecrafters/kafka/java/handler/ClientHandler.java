@@ -77,30 +77,6 @@ public class ClientHandler {
             } catch (IOException ex) {
                 System.out.println("Exception occurred: " + ex.getMessage());
 
-            } finally {
-                if (bufferedInputStream != null) {
-                    try {
-                        bufferedInputStream.close();
-                    } catch (IOException ex) {
-                        System.out.println("Exception occurred: " + ex.getMessage());
-                    }
-                }
-
-                if (outputStream != null) {
-                    try {
-                        outputStream.close();
-                    } catch (IOException ex) {
-                        System.out.println("Exception occurred: " + ex.getMessage());
-                    }
-                }
-
-                if (bos != null) {
-                    try {
-                        bos.close();
-                    } catch (IOException ex) {
-                        System.out.println("Exception occurred: " + ex.getMessage());
-                    }
-                }
             }
         }
     }
