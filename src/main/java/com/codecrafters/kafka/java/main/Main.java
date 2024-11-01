@@ -46,10 +46,9 @@ public class Main {
 
             try (BufferedInputStream bufferedInputStream =
                          new BufferedInputStream(clientSocket.getInputStream());
-                 OutputStream outputStream = clientSocket.getOutputStream();
-                 ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                 OutputStream outputStream = clientSocket.getOutputStream()) {
 
-
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 // Request Header v2 => request_api_key request_api_version correlation_id client_id TAG_BUFFER
                 //      request_api_key => INT16
                 //      request_api_version => INT16
