@@ -27,7 +27,11 @@ public class Main {
 
             if (shortApiVersion < 0 || shortApiVersion > 4) {
                 outputStream.write(new byte[] {0, 35});
+            } else {
+                outputStream.write(new byte[] {0, 0});
             }
+            outputStream.write(new byte[] {0, 18});
+            outputStream.write(new byte[] {0, 4});
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         } finally {
