@@ -18,20 +18,27 @@ public class Main {
 
             byte[] length = inputStream.readNBytes(4);
             byte[] apiKey = inputStream.readNBytes(2);
-            byte[] apiVersion = inputStream.readNBytes(2);
-            short shortApiVersion = ByteBuffer.wrap(apiVersion).getShort();
+            byte[] apiVersionBytes = inputStream.readNBytes(2);
+            short apiVersion = ByteBuffer.wrap(apiVersionBytes).getShort();
             byte[] correlationId = inputStream.readNBytes(4);
 
-            outputStream.write(length);
             outputStream.write(correlationId);
 
-            if (shortApiVersion < 0 || shortApiVersion > 4) {
+            if (apiVersion < 0 || apiVersion > 4) {
                 outputStream.write(new byte[] {0, 35});
             } else {
-                outputStream.write(new byte[] {0, 0});
+                outputStream.write(new byte[] {0, 0});  // error code
+                outputStream.write(2);               // array size + 1
+                outputStream.write(new byte[] {0, 18}); // api_key
+                outputStream.write(new byte[] {0, 3});  // min version
+                outputStream.write(new byte[] {0, 4});  // max version
+                outputStream.write(0);               // tagged fields
+                outputStream.write(new byte[] {0, 0, 0, 0}); // throttle time
+                // All requests and responses will end with a tagged field buffer.  If
+                // there are no tagged fields, this will only be a single zero byte.
+                outputStream.write(0); // tagged fields
             }
-            outputStream.write(new byte[] {0, 18});
-            outputStream.write(new byte[] {0, 4});
+
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         } finally {
