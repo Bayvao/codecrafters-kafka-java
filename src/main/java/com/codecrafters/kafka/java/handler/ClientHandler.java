@@ -10,12 +10,6 @@ import java.util.Arrays;
 
 public class ClientHandler {
 
-    private static final int UNSUPPORTED_VERSION_ERROR_CODE = 35;
-    private static final int NO_ERROR_CODE = 0;
-    private static final int API_VERSIONS_KEY = 18;
-    private static final int SUPPORTED_API_VERSION_MIN = 0;
-    private static final int SUPPORTED_API_VERSION_MAX = 4;
-
     private final Socket clientSocket;
 
     public ClientHandler(Socket clientSocket) {
@@ -49,8 +43,9 @@ public class ClientHandler {
 
 
                 // response
+                bos.write(correlationId);
                 if (apiVersion < 0 || apiVersion > 4) {
-                    sendErrorResponse(outputStream, correlationId);
+                    bos.write(new byte[]{0, 35});
                 } else {
 
                     // error code 16 bit
@@ -58,8 +53,27 @@ public class ClientHandler {
                     // min_version => INT16
                     // max_version => INT16
                     // throttle_time_ms => INT32
-                    sendAPIVersionsResponse(outputStream, correlationId);
+                    bos.write(new byte[]{0, 0});  // error code
+                    bos.write(2);               // array size + 1
+                    bos.write(new byte[]{0, 18}); // api_key
+                    bos.write(new byte[]{0, 3});  // min version
+                    bos.write(new byte[]{0, 4});  // max version
+                    bos.write(0);               // tagged fields
+                    bos.write(new byte[]{0, 0, 0, 0}); // throttle time
+                    // All requests and responses will end with a tagged field buffer.  If
+                    // there are no tagged fields, this will only be a single zero byte.
+                    bos.write(0); // tagged fields
                 }
+
+                int size = bos.size();
+                byte[] sizeBytes = ByteBuffer.allocate(4).putInt(size).array();
+                var response = bos.toByteArray();
+                System.out.println(Arrays.toString(sizeBytes));
+                System.out.println(Arrays.toString(response));
+                outputStream.write(sizeBytes);
+                outputStream.write(response);
+                outputStream.flush();
+
             } catch (IOException ex) {
                 System.out.println("Exception occurred: " + ex.getMessage());
 
@@ -87,51 +101,8 @@ public class ClientHandler {
                         System.out.println("Exception occurred: " + ex.getMessage());
                     }
                 }
-
-                try {
-                    clientSocket.close();
-                } catch (IOException ex) {
-                    System.out.println("Exception occurred: " + ex.getMessage());
-                }
             }
         }
-    }
-
-    private static void sendErrorResponse(OutputStream out, byte[] correlationId)
-            throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        bos.write(correlationId); // Correlation ID
-        bos.write(new byte[] {0, UNSUPPORTED_VERSION_ERROR_CODE}); // Error code (35)
-
-        int size = bos.size();
-        out.write(ByteBuffer.allocate(4).putInt(size).array()); // Message size
-        out.write(bos.toByteArray());                           // Payload
-        out.flush();
-    }
-
-    private static void sendAPIVersionsResponse(OutputStream out, byte[] correlationId) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-        bos.write(correlationId);                               // Correlation ID
-        bos.write(new byte[] {0, (byte)NO_ERROR_CODE});               // No error
-        bos.write(2);                                        // Number of API keys
-        bos.write(new byte[] {0, (byte)API_VERSIONS_KEY});            // API key (API_VERSIONS_KEY)
-        bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MIN});   // Min version
-        bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MAX});   // Max version
-        bos.write(0);                                        // tagged fields
-        bos.write(new byte[] {0, 0, 0, 0});                     // Throttle time
-
-        // All requests and responses will end with a tagged field buffer.  If
-        // there are no tagged fields, this will only be a single zero byte.
-        bos.write(0);                       // Tagged fields end byte
-
-        int size = bos.size();
-        out.write(ByteBuffer.allocate(4).putInt(size).array()); // Message size
-        out.write(bos.toByteArray());                           // Payload
-        out.flush();
-        System.err.printf(
-                "Correlation ID: %d - Sent APIVersions response with no error.%n",
-                correlationId);
     }
 
 }
