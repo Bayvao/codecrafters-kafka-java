@@ -113,11 +113,11 @@ public class ClientHandler {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         bos.write(correlationId);                               // Correlation ID
-        bos.write(new byte[] {0, NO_ERROR_CODE});               // No error
+        bos.write(new byte[] {0, (byte)NO_ERROR_CODE});               // No error
         bos.write(2);                                        // Number of API keys
-        bos.write(new byte[] {0, API_VERSIONS_KEY});            // API key (API_VERSIONS_KEY)
-        bos.write(new byte[] {0, SUPPORTED_API_VERSION_MIN});   // Min version
-        bos.write(new byte[] {0, SUPPORTED_API_VERSION_MAX});   // Max version
+        bos.write(new byte[] {0, (byte)API_VERSIONS_KEY});            // API key (API_VERSIONS_KEY)
+        bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MIN});   // Min version
+        bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MAX});   // Max version
         bos.write(0);                                        // tagged fields
         bos.write(new byte[] {0, 0, 0, 0});                     // Throttle time
 
