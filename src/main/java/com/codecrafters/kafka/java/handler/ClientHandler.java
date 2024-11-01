@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -54,6 +55,8 @@ public class ClientHandler {
                     sendAPIVersionsResponse(outputStream, correlationId);
                 }
 
+            } catch (BufferUnderflowException ex) {
+                // do nothing
             } catch (IOException ex) {
                 System.out.println("Exception occurred: " + ex.getMessage());
 
