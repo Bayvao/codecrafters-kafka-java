@@ -37,7 +37,7 @@ public class ClientHandler {
 
                 byte[] length = bufferedInputStream.readNBytes(4);  // request size 4 bytes
                 byte[] apiKeyBytes = bufferedInputStream.readNBytes(2); // REQ header api key 16bit
-                int apiKey = ByteBuffer.wrap(apiKeyBytes).getInt();
+                short apiKey = ByteBuffer.wrap(apiKeyBytes).getShort();
                 System.out.println("api key: " + apiKey);
                 byte[] apiVersionBytes = bufferedInputStream.readNBytes(2); // api version 16bit
                 short apiVersion = ByteBuffer.wrap(apiVersionBytes).getShort();
