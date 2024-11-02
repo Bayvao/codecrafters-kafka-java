@@ -41,6 +41,27 @@ public class ClientHandler {
                 byte[] apiVersionBytes = bufferedInputStream.readNBytes(2); // api version 16bit
                 short apiVersion = ByteBuffer.wrap(apiVersionBytes).getShort();
                 byte[] correlationId = bufferedInputStream.readNBytes(4); // correlation id 32bit
+                byte[] clientIDBytes = bufferedInputStream.readNBytes(2); // correlation id 32bit
+                short clientIdLength = ByteBuffer.wrap(clientIDBytes).getShort();
+                byte[] clientId = bufferedInputStream.readNBytes(clientIdLength);
+                System.out.println("Client ID: " + new String(clientId));
+                bufferedInputStream.readNBytes(1);
+                byte[] arrayLengthBytes = bufferedInputStream.readNBytes(1);
+                int arrLen = ByteBuffer.wrap(arrayLengthBytes).getInt();
+                System.out.println("Array Length: " + arrLen);
+                for (int i = 0; i < arrLen - 1; i++) {
+                   byte[] topicNameLengthBytes = bufferedInputStream.readNBytes(4);
+                    int topicNameLen = ByteBuffer.wrap(topicNameLengthBytes).getInt();
+                   byte[] topicNameBytes = bufferedInputStream.readNBytes(topicNameLen);
+                    System.out.println("Topic Name: " + new String(topicNameBytes));
+                }
+                bufferedInputStream.readNBytes(1);
+                byte[] respPartitionLimBytes = bufferedInputStream.readNBytes(4);
+                int respPartitionLim = ByteBuffer.wrap(respPartitionLimBytes).getInt();
+                System.out.println("Response partition Limit: " + respPartitionLim);
+                byte[] cursorBytes = bufferedInputStream.readNBytes(1);
+                byte[] taggedBytes = bufferedInputStream.readNBytes(1);
+                System.out.println("Completed request transformation...");
                 // client_id nullable string
                 // tagged fields nullable
 
