@@ -8,9 +8,18 @@ public class RequestParser {
 
     private static final int UNSUPPORTED_VERSION_ERROR_CODE = 35;
     private static final int NO_ERROR_CODE = 0;
-    private static final int API_VERSIONS_KEY = 18;
-    private static final int SUPPORTED_API_VERSION_MIN = 0;
-    private static final int SUPPORTED_API_VERSION_MAX = 4;
+    private static final byte TAG_BUFFER = 0;
+    private static final short ERROR_CODE = 3;
+
+    private static final short API_KEY = 18;
+    private static final short MIN_VERSION = 0;
+    private static final short MAX_VERSION = 4;
+    public static final short DESCRIBE_TOPIC_PARTITION_KEY = 75;
+    public static final int PAGINATION_FIELD = 0xff;
+    public static final int ARRAY_LEN_2 = 2;
+    public static final int EMPTY_FIELDS = 0;
+    public static final int ARRAY_LEN_3 = 3;
+    public static final int TROTTLE_TIME = 0;
 
     public void parse(BufferedInputStream bufferedInputStream, OutputStream outputStream) {
         try {
@@ -44,26 +53,24 @@ public class RequestParser {
     private void sendAPIVersionsResponse(OutputStream out, short apiVersion, int correlationId)
             throws IOException {
         ByteBuffer resBuffer = ByteBuffer.allocate(1024);
-        short error = 0;
+        short error = NO_ERROR_CODE;
         if (apiVersion < 0 || apiVersion > 4) {
-            error = 35;
+            error = UNSUPPORTED_VERSION_ERROR_CODE;
         }
-        short API_KEY = 18;
-        short MIN_VERSION = 0;
-        short MAX_VERSION = 4;
+
         resBuffer = resBuffer.putInt(correlationId)
                 .putShort(error)
-                .put((byte) 3) // array length + 1
+                .put((byte) ARRAY_LEN_3) // array length + 1
                 .putShort(API_KEY)
                 .putShort(MIN_VERSION)
                 .putShort(MAX_VERSION)
-                .put((byte) 0) // tagged_fields
-                .putShort((short) 75)
-                .putShort((short) 0)
-                .putShort((short) 0)
-                .put((byte) 0) // tagged_fields
-                .putInt(0)    // throttle time
-                .put((byte) 0) // tagged_fields
+                .put(TAG_BUFFER) // tagged_fields
+                .putShort(DESCRIBE_TOPIC_PARTITION_KEY)
+                .putShort((short) EMPTY_FIELDS)
+                .putShort((short) EMPTY_FIELDS)
+                .put(TAG_BUFFER) // tagged_fields
+                .putInt(TROTTLE_TIME)    // throttle time
+                .put(TAG_BUFFER) // tagged_fields
                 .flip();
         byte[] res = new byte[resBuffer.remaining()];
         resBuffer.get(res);
@@ -88,15 +95,14 @@ public class RequestParser {
         byte partitionsArray = 1;
         byte[] topicAuthorizedOperations = {0, 0, 0, 0, 1, 1, 0, 1,
                 0, 1, 1, 1, 1, 0, 0, 0};
-        final byte TAG_BUFFER = 0;
-        final short ERROR_CODE = 3;
+
         byte[] topicId = new byte[16];
         byte isInternal = 0;
         ByteBuffer resBuffer = ByteBuffer.allocate(1024);
         resBuffer.putInt(correlationId)
                 .put(TAG_BUFFER)
                 .putInt(0)            // throttle_time
-                .put((byte)2)         // array length + 1
+                .put((byte) ARRAY_LEN_2)         // array length + 1
                 .putShort(ERROR_CODE) // error code for topic
                 .put(topicNameLength)
                 .put(topicName)
@@ -105,7 +111,7 @@ public class RequestParser {
                 .put(partitionsArray)
                 .put(topicAuthorizedOperations)
                 .put(TAG_BUFFER)
-                .put((byte)0xff) // Next Cursor: A nullable field that can be used for
+                .put((byte) PAGINATION_FIELD) // Next Cursor: A nullable field that can be used for
                 // pagination.
                 .put(TAG_BUFFER)
                 .flip();
