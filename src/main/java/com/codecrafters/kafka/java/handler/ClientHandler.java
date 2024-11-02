@@ -45,7 +45,7 @@ public class ClientHandler {
                 short clientIdLength = ByteBuffer.wrap(clientIDBytes).getShort();
                 byte[] clientId = bufferedInputStream.readNBytes(clientIdLength);
                 System.out.println("Client ID: " + new String(clientId));
-                bufferedInputStream.readNBytes(1);
+                bufferedInputStream.readNBytes(2);
                 System.out.println("here 1");
                 byte[] arrayLengthBytes = bufferedInputStream.readNBytes(1);
                 System.out.println("here 2 len: " + new String(arrayLengthBytes));
