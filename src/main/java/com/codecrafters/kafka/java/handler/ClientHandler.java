@@ -46,10 +46,15 @@ public class ClientHandler {
                 byte[] clientId = bufferedInputStream.readNBytes(clientIdLength);
                 System.out.println("Client ID: " + new String(clientId));
                 bufferedInputStream.readNBytes(1);
+                System.out.println("here 1");
                 byte[] arrayLengthBytes = bufferedInputStream.readNBytes(1);
+                System.out.println("here 2");
                 int arrLen = ByteBuffer.wrap(arrayLengthBytes).getInt();
+                System.out.println("here 3");
                 System.out.println("Array Length: " + arrLen);
+                System.out.println("here 4");
                 for (int i = 0; i < arrLen - 1; i++) {
+                    System.out.println("here 5");
                    byte[] topicNameLengthBytes = bufferedInputStream.readNBytes(4);
                     int topicNameLen = ByteBuffer.wrap(topicNameLengthBytes).getInt();
                    byte[] topicNameBytes = bufferedInputStream.readNBytes(topicNameLen);
