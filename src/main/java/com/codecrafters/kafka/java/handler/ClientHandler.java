@@ -36,7 +36,7 @@ public class ClientHandler {
                 //      client_id => NULLABLE_STRING
 
                 byte[] requestLengthBytes = bufferedInputStream.readNBytes(4);  // request size 4 bytes
-                short requestLength = ByteBuffer.wrap(requestLengthBytes).getShort();
+                int requestLength = ByteBuffer.wrap(requestLengthBytes).getInt();
                 System.out.println("Request body length: " + requestLength);
                 byte[] requestBody = bufferedInputStream.readNBytes(requestLength);
 
