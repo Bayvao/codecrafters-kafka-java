@@ -3,6 +3,8 @@ package com.codecrafters.kafka.java.util;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class RequestParser {
 
@@ -20,6 +22,8 @@ public class RequestParser {
     public static final int EMPTY_FIELDS = 0;
     public static final int ARRAY_LEN_3 = 3;
     public static final int TROTTLE_TIME = 0;
+
+    private static final String FILE_PATH = "/tmp/kraft-combined-logs/__cluster_metadata-0/00000000000000000000.log";
 
     public void parse(BufferedInputStream bufferedInputStream, OutputStream outputStream) {
         try {
@@ -84,6 +88,66 @@ public class RequestParser {
                                                      int correlationId)
             throws IOException {
         System.out.println("Handling DescribeTopicPartition...");
+
+        try (InputStream in = Files.newInputStream(Paths.get(FILE_PATH));
+             BufferedInputStream reader = new BufferedInputStream(in)) {
+
+
+            byte[] baseOffsetBytes = reader.readNBytes(8); // base offset
+            byte[] batchLengthBytes = reader.readNBytes(4); // batch length
+            int batchLength = ByteBuffer.wrap(batchLengthBytes).getInt();
+            System.out.println("Request body length: " + batchLength);
+            byte[] requestBody = reader.readNBytes(batchLength);
+            ByteBuffer batchReqBuffer = ByteBuffer.allocate(batchLength).put(requestBody).rewind();
+            System.out.println(batchReqBuffer);
+            int partitionLeaderEpoch = batchReqBuffer.getInt();
+            short magicByte = batchReqBuffer.get();
+            int crc = batchReqBuffer.getInt();
+            short attributes = batchReqBuffer.getShort();
+            int lastOffsetData = batchReqBuffer.getInt();
+            long baseTimestamp = batchReqBuffer.getLong();
+            long maxTimestamp = batchReqBuffer.getLong();
+            long producerId = batchReqBuffer.getLong();
+            short producerEpoch = batchReqBuffer.getShort();
+            int baseSequence = batchReqBuffer.getInt();
+            int recordsLength = batchReqBuffer.getInt();
+            int length = batchReqBuffer.get();
+            int attribute = batchReqBuffer.get();
+            int timestampDelta = batchReqBuffer.get();
+            int offsetDelta = batchReqBuffer.get();
+            int keyLength = batchReqBuffer.get();
+            String key = null;
+            int valueLength = batchReqBuffer.get();
+            int frameVersion = batchReqBuffer.get();
+            int type = batchReqBuffer.get();
+            int version = batchReqBuffer.get();
+            int nameLength = batchReqBuffer.get();
+            String name = new String(getNBytes(batchReqBuffer, nameLength - 1), StandardCharsets.UTF_8);
+            short featureLevel = batchReqBuffer.getShort();
+            int taggedField = batchReqBuffer.get();
+            int headerArrCount = batchReqBuffer.get();
+            long baseOffset = batchReqBuffer.getLong();
+            int batchLen = batchReqBuffer.getInt();
+            int partLeaderEpoch = batchReqBuffer.getInt();
+
+
+
+
+        } catch (IOException x) {
+            System.err.println(x);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
         short clientIdLength = reqBuffer.getShort();
         String clientId = new String(getNBytes(reqBuffer, clientIdLength),
                 StandardCharsets.UTF_8);
