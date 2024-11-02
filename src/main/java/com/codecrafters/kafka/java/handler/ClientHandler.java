@@ -37,6 +37,7 @@ public class ClientHandler {
 
                 byte[] requestLengthBytes = bufferedInputStream.readNBytes(4);  // request size 4 bytes
                 short requestLength = ByteBuffer.wrap(requestLengthBytes).getShort();
+                System.out.println("Request body length: " + requestLength);
                 byte[] requestBody = bufferedInputStream.readNBytes(requestLength);
 
                 System.out.println("Read request body");
