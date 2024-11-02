@@ -1,5 +1,7 @@
 package com.codecrafters.kafka.java.handler;
 
+import com.codecrafters.kafka.java.util.RequestParser;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -17,9 +19,11 @@ public class ClientHandler {
     private static final int SUPPORTED_API_VERSION_MIN = 0;
     private static final int SUPPORTED_API_VERSION_MAX = 4;
     private final Socket clientSocket;
+    private final RequestParser requestParser;
 
     public ClientHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
+        requestParser = new RequestParser();
     }
 
     public void handleClients() {
@@ -35,60 +39,7 @@ public class ClientHandler {
                 //      correlation_id => INT32
                 //      client_id => NULLABLE_STRING
 
-                byte[] requestLengthBytes = bufferedInputStream.readNBytes(4);  // request size 4 bytes
-                int requestLength = ByteBuffer.wrap(requestLengthBytes).getInt();
-                System.out.println("Request body length: " + requestLength);
-                byte[] requestBody = bufferedInputStream.readNBytes(requestLength);
-
-                System.out.println("Read request body");
-
-                byte[] apiKeyBytes = bufferedInputStream.readNBytes(2); // REQ header api key 16bit
-                short apiKey = ByteBuffer.wrap(apiKeyBytes).getShort();
-                System.out.println("api key: " + apiKey);
-                byte[] apiVersionBytes = bufferedInputStream.readNBytes(2); // api version 16bit
-                short apiVersion = ByteBuffer.wrap(apiVersionBytes).getShort();
-                System.out.println("api version: " + apiVersion);
-                byte[] correlationId = bufferedInputStream.readNBytes(4); // correlation id 32bit
-                byte[] clientIDBytes = bufferedInputStream.readNBytes(2); // correlation id 32bit
-                short clientIdLength = ByteBuffer.wrap(clientIDBytes).getShort();
-                byte[] clientId = bufferedInputStream.readNBytes(clientIdLength);
-                System.out.println("Client ID: " + new String(clientId));
-                byte[] tagBuffer = bufferedInputStream.readNBytes(1);
-                System.out.println("here 1");
-                byte[] arrayLengthBytes = bufferedInputStream.readNBytes(1);
-                System.out.println("here 2 len: " + new String(arrayLengthBytes));
-                short arrLen = ByteBuffer.wrap(arrayLengthBytes).getShort();
-                System.out.println("here 3");
-                System.out.println("Array Length: " + arrLen);
-                System.out.println("here 4");
-                for (int i = 0; i < arrLen - 1; i++) {
-                    System.out.println("here 5");
-                   byte[] topicNameLengthBytes = bufferedInputStream.readNBytes(4);
-                    short topicNameLen = ByteBuffer.wrap(topicNameLengthBytes).getShort();
-                   byte[] topicNameBytes = bufferedInputStream.readNBytes(topicNameLen);
-                    System.out.println("Topic Name: " + new String(topicNameBytes));
-                }
-                bufferedInputStream.readNBytes(1);
-                byte[] respPartitionLimBytes = bufferedInputStream.readNBytes(4);
-                short respPartitionLim = ByteBuffer.wrap(respPartitionLimBytes).getShort();
-                System.out.println("Response partition Limit: " + respPartitionLim);
-                byte[] cursorBytes = bufferedInputStream.readNBytes(1);
-                byte[] taggedBytes = bufferedInputStream.readNBytes(1);
-                System.out.println("Completed request transformation...");
-                // client_id nullable string
-                // tagged fields nullable
-
-                // response
-                if (apiVersion < 0 || apiVersion > 4) {
-                   sendErrorResponse(outputStream, correlationId);
-                } else {
-                    // error code 16 bit
-                    // api_key => INT16
-                    // min_version => INT16
-                    // max_version => INT16
-                    // throttle_time_ms => INT32
-                    sendAPIVersionsResponse(outputStream, correlationId);
-                }
+                requestParser.parse(bufferedInputStream, outputStream);
 
             } catch (BufferUnderflowException ex) {
                 // do nothing
@@ -97,40 +48,6 @@ public class ClientHandler {
 
             }
         }
-    }
-
-    private void sendErrorResponse(OutputStream out, byte[] correlationId) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-        bos.write(correlationId); // Correlation ID
-        bos.write(new byte[] {0, (byte)UNSUPPORTED_VERSION_ERROR_CODE}); // Error code (35)
-        int size = bos.size();
-        out.write(ByteBuffer.allocate(4).putInt(size).array()); // Message size
-        out.write(bos.toByteArray());                           // Payload
-        out.flush();
-    }
-
-    private void sendAPIVersionsResponse(OutputStream out, byte[] correlationId) throws IOException {
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-        bos.write(correlationId); // Correlation ID
-        bos.write(new byte[] {0, (byte)NO_ERROR_CODE});            // No error
-        bos.write(3); // Number of API keys
-        bos.write(new byte[] {0, (byte)API_VERSIONS_KEY}); // API key (API_VERSIONS_KEY)
-        bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MIN}); // Min version
-        bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MAX}); // Max version
-        bos.write(0);
-        bos.write(new byte[] {0, 75}); // API key (API_VERSIONS_KEY)
-        bos.write(new byte[] {0, 0}); // Min version
-        bos.write(new byte[] {0, 0}); // Max version
-        bos.write(0);
-        bos.write(new byte[] {0, 0, 0, 0}); // Throttle time
-        bos.write(0);                       // Tagged fields end byte
-        int size = bos.size(); // tagged fields
-        out.write(ByteBuffer.allocate(4).putInt(size).array()); // Message size
-        out.write(bos.toByteArray());                           // Payload
-        out.flush();
     }
 
 }
