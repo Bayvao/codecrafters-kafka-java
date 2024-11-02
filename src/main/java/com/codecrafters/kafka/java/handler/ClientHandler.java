@@ -35,7 +35,7 @@ public class ClientHandler {
                 //      correlation_id => INT32
                 //      client_id => NULLABLE_STRING
 
-                byte[] length = bufferedInputStream.readNBytes(4);  // request size 4 bytes
+                byte[] requestLength = bufferedInputStream.readNBytes(4);  // request size 4 bytes
                 byte[] apiKeyBytes = bufferedInputStream.readNBytes(2); // REQ header api key 16bit
                 short apiKey = ByteBuffer.wrap(apiKeyBytes).getShort();
                 System.out.println("api key: " + apiKey);
@@ -51,20 +51,20 @@ public class ClientHandler {
                 System.out.println("here 1");
                 byte[] arrayLengthBytes = bufferedInputStream.readNBytes(1);
                 System.out.println("here 2 len: " + new String(arrayLengthBytes));
-                int arrLen = ByteBuffer.wrap(arrayLengthBytes).getShort();
+                short arrLen = ByteBuffer.wrap(arrayLengthBytes).getShort();
                 System.out.println("here 3");
                 System.out.println("Array Length: " + arrLen);
                 System.out.println("here 4");
                 for (int i = 0; i < arrLen - 1; i++) {
                     System.out.println("here 5");
                    byte[] topicNameLengthBytes = bufferedInputStream.readNBytes(4);
-                    int topicNameLen = ByteBuffer.wrap(topicNameLengthBytes).getShort();
+                    short topicNameLen = ByteBuffer.wrap(topicNameLengthBytes).getShort();
                    byte[] topicNameBytes = bufferedInputStream.readNBytes(topicNameLen);
                     System.out.println("Topic Name: " + new String(topicNameBytes));
                 }
                 bufferedInputStream.readNBytes(1);
                 byte[] respPartitionLimBytes = bufferedInputStream.readNBytes(4);
-                int respPartitionLim = ByteBuffer.wrap(respPartitionLimBytes).getShort();
+                short respPartitionLim = ByteBuffer.wrap(respPartitionLimBytes).getShort();
                 System.out.println("Response partition Limit: " + respPartitionLim);
                 byte[] cursorBytes = bufferedInputStream.readNBytes(1);
                 byte[] taggedBytes = bufferedInputStream.readNBytes(1);
