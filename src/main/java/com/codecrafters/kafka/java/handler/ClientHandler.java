@@ -48,7 +48,7 @@ public class ClientHandler {
                 bufferedInputStream.readNBytes(1);
                 System.out.println("here 1");
                 byte[] arrayLengthBytes = bufferedInputStream.readNBytes(1);
-                System.out.println("here 2");
+                System.out.println("here 2 len: " + new String(arrayLengthBytes));
                 int arrLen = ByteBuffer.wrap(arrayLengthBytes).getShort();
                 System.out.println("here 3");
                 System.out.println("Array Length: " + arrLen);
