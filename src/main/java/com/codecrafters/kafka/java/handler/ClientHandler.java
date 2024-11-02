@@ -36,7 +36,8 @@ public class ClientHandler {
                 //      client_id => NULLABLE_STRING
 
                 byte[] length = bufferedInputStream.readNBytes(4);  // request size 4 bytes
-                byte[] apiKey = bufferedInputStream.readNBytes(2); // REQ header api key 16bit
+                byte[] apiKeyBytes = bufferedInputStream.readNBytes(2); // REQ header api key 16bit
+                int apiKey = ByteBuffer.wrap(apiKeyBytes).getInt();
                 byte[] apiVersionBytes = bufferedInputStream.readNBytes(2); // api version 16bit
                 short apiVersion = ByteBuffer.wrap(apiVersionBytes).getShort();
                 byte[] correlationId = bufferedInputStream.readNBytes(4); // correlation id 32bit
@@ -52,7 +53,7 @@ public class ClientHandler {
                     // min_version => INT16
                     // max_version => INT16
                     // throttle_time_ms => INT32
-                    sendAPIVersionsResponse(outputStream, correlationId);
+                    sendAPIVersionsResponse(outputStream, correlationId, apiKey);
                 }
 
             } catch (BufferUnderflowException ex) {
@@ -75,16 +76,19 @@ public class ClientHandler {
         out.flush();
     }
 
-    private void sendAPIVersionsResponse(OutputStream out, byte[] correlationId) throws IOException {
+    private void sendAPIVersionsResponse(OutputStream out, byte[] correlationId, int apiKey) throws IOException {
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         bos.write(correlationId); // Correlation ID
         bos.write(new byte[] {0, (byte)NO_ERROR_CODE});            // No error
         bos.write(2); // Number of API keys
-        bos.write(new byte[] {0, (byte)API_VERSIONS_KEY}); // API key (API_VERSIONS_KEY)
-        bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MIN}); // Min version
-        bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MAX}); // Max version
+        bos.write(new byte[] {0, (byte)API_VERSIONS_KEY}); // API key (API_VERSIONS_KEY) 18
+        bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MIN}); // Min version for api key 18
+        bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MAX}); // Max version for api key 18
+        bos.write(new byte[] {0, 75}); // API key (API_VERSIONS_KEY) 75
+        bos.write(new byte[] {0, 0}); // Min version for api key 75
+        bos.write(new byte[] {0, 0}); // Max version for api key 75
         bos.write(0);
         bos.write(new byte[] {0, 0, 0, 0}); // Throttle time
         bos.write(0);                       // Tagged fields end byte
