@@ -49,20 +49,20 @@ public class ClientHandler {
                 System.out.println("here 1");
                 byte[] arrayLengthBytes = bufferedInputStream.readNBytes(1);
                 System.out.println("here 2");
-                int arrLen = ByteBuffer.wrap(arrayLengthBytes).getInt();
+                int arrLen = ByteBuffer.wrap(arrayLengthBytes).getShort();
                 System.out.println("here 3");
                 System.out.println("Array Length: " + arrLen);
                 System.out.println("here 4");
                 for (int i = 0; i < arrLen - 1; i++) {
                     System.out.println("here 5");
                    byte[] topicNameLengthBytes = bufferedInputStream.readNBytes(4);
-                    int topicNameLen = ByteBuffer.wrap(topicNameLengthBytes).getInt();
+                    int topicNameLen = ByteBuffer.wrap(topicNameLengthBytes).getShort();
                    byte[] topicNameBytes = bufferedInputStream.readNBytes(topicNameLen);
                     System.out.println("Topic Name: " + new String(topicNameBytes));
                 }
                 bufferedInputStream.readNBytes(1);
                 byte[] respPartitionLimBytes = bufferedInputStream.readNBytes(4);
-                int respPartitionLim = ByteBuffer.wrap(respPartitionLimBytes).getInt();
+                int respPartitionLim = ByteBuffer.wrap(respPartitionLimBytes).getShort();
                 System.out.println("Response partition Limit: " + respPartitionLim);
                 byte[] cursorBytes = bufferedInputStream.readNBytes(1);
                 byte[] taggedBytes = bufferedInputStream.readNBytes(1);
