@@ -35,7 +35,12 @@ public class ClientHandler {
                 //      correlation_id => INT32
                 //      client_id => NULLABLE_STRING
 
-                byte[] requestLength = bufferedInputStream.readNBytes(4);  // request size 4 bytes
+                byte[] requestLengthBytes = bufferedInputStream.readNBytes(4);  // request size 4 bytes
+                short requestLength = ByteBuffer.wrap(requestLengthBytes).getShort();
+                byte[] requestBody = bufferedInputStream.readNBytes(requestLength);
+
+                System.out.println("Read request body");
+
                 byte[] apiKeyBytes = bufferedInputStream.readNBytes(2); // REQ header api key 16bit
                 short apiKey = ByteBuffer.wrap(apiKeyBytes).getShort();
                 System.out.println("api key: " + apiKey);
