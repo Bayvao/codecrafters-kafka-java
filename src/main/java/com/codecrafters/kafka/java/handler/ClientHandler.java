@@ -82,7 +82,7 @@ public class ClientHandler {
 
         bos.write(correlationId); // Correlation ID
         bos.write(new byte[] {0, (byte)NO_ERROR_CODE});            // No error
-        bos.write(2); // Number of API keys
+        bos.write(3); // Number of API keys
         bos.write(new byte[] {0, (byte)API_VERSIONS_KEY}); // API key (API_VERSIONS_KEY)
         bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MIN}); // Min version
         bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MAX}); // Max version
