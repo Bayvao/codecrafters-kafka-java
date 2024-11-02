@@ -86,6 +86,7 @@ public class ClientHandler {
         bos.write(new byte[] {0, (byte)API_VERSIONS_KEY}); // API key (API_VERSIONS_KEY)
         bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MIN}); // Min version
         bos.write(new byte[] {0, (byte)SUPPORTED_API_VERSION_MAX}); // Max version
+        bos.write(0);
         bos.write(new byte[] {0, 75}); // API key (API_VERSIONS_KEY)
         bos.write(new byte[] {0, 0}); // Min version
         bos.write(new byte[] {0, 0}); // Max version
