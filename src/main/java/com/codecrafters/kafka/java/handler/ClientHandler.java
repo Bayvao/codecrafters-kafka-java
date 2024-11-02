@@ -40,6 +40,7 @@ public class ClientHandler {
                // int apiKey = ByteBuffer.wrap(apiKeyBytes).getInt();
                 byte[] apiVersionBytes = bufferedInputStream.readNBytes(2); // api version 16bit
                 short apiVersion = ByteBuffer.wrap(apiVersionBytes).getShort();
+                System.out.println("api version: " + apiVersion);
                 byte[] correlationId = bufferedInputStream.readNBytes(4); // correlation id 32bit
                 byte[] clientIDBytes = bufferedInputStream.readNBytes(2); // correlation id 32bit
                 short clientIdLength = ByteBuffer.wrap(clientIDBytes).getShort();
