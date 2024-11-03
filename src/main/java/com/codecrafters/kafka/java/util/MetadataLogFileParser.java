@@ -8,15 +8,16 @@ import java.nio.file.Paths;
 
 public class MetadataLogFileParser {
 
-
     private static final String FILE_PATH = "/tmp/kraft-combined-logs/__cluster_metadata-0/00000000000000000000.log";
     public void parseMetadataLogFile() {
+
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream(FILE_PATH), StandardCharsets.UTF_8))) {
 
             String line;
 
             while ((line = reader.readLine()) != null) {
+                System.out.println("line: " + line);
 
                 byte[] bytes = line.getBytes(StandardCharsets.UTF_8);
                 ByteBuffer batchReqBuffer = ByteBuffer.allocate(bytes.length).put(bytes).rewind();
@@ -87,5 +88,9 @@ public class MetadataLogFileParser {
             bytes[i] = buffer.get();
         }
         return bytes;
+    }
+
+    private byte[] getLong(long val) {
+        return ByteBuffer.allocate(Long.BYTES).putLong(val).array();
     }
 }
