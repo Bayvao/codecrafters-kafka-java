@@ -1,5 +1,8 @@
 package com.codecrafters.kafka.java.util;
 
+import com.codecrafters.kafka.java.dto.Batch;
+import com.codecrafters.kafka.java.dto.MetadataFileDTO;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -154,17 +157,11 @@ public class RequestParser {
 //            System.err.println(x);
 //        }
 
-
+        MetadataFileDTO metadataFileDTO = new MetadataFileDTO();
         MetadataLogFileParser metadataLogFileParser = new MetadataLogFileParser();
-        metadataLogFileParser.parseMetadataLogFile();
+        metadataLogFileParser.parseMetadataLogFile(metadataFileDTO);
 
-
-
-
-
-
-
-
+        System.out.println(metadataFileDTO);
 
 
         short clientIdLength = reqBuffer.getShort();
