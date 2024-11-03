@@ -1,8 +1,6 @@
 package com.codecrafters.kafka.java.util;
 
-import com.codecrafters.kafka.java.dto.Batch;
-import com.codecrafters.kafka.java.dto.FeatureLevelRecord;
-import com.codecrafters.kafka.java.dto.MetadataFileDTO;
+import com.codecrafters.kafka.java.dto.*;
 import com.codecrafters.kafka.java.dto.Record;
 
 import java.io.*;
@@ -12,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MetadataLogFileParser {
 
@@ -125,10 +124,10 @@ public class MetadataLogFileParser {
 
         switch (recordType) {
             case 2:
-                recordData.setFeatureLevelRecord(getfeatureLevelRecord(batchReqBuffer));
+                recordData.setTopicRecord(setTopicRecord(batchReqBuffer));
                 break;
             case 3:
-                recordData.setFeatureLevelRecord(getfeatureLevelRecord(batchReqBuffer));
+                recordData.setPartitionRecord(getPartition(batchReqBuffer));
                 break;
             case 12:
                 recordData.setFeatureLevelRecord(getfeatureLevelRecord(batchReqBuffer));
@@ -145,6 +144,69 @@ public class MetadataLogFileParser {
         return recordData;
     }
 
+    private PartitionRecord getPartition(ByteBuffer batchReqBuffer) {
+        PartitionRecord partitionRecord = new PartitionRecord();
+
+        int partitionId = batchReqBuffer.getInt();
+        System.out.println("partitionId: " + partitionId);
+        partitionRecord.setPartitionId(partitionId);
+
+        byte[] topicUUID = getNBytes(batchReqBuffer, 16);
+        System.out.println("topicUUID: " + new String(topicUUID));
+        partitionRecord.setTopicUUID(UUID.nameUUIDFromBytes(topicUUID));
+
+        int replicaArrLen = batchReqBuffer.get();
+        System.out.println("replicaArrLen: " + replicaArrLen);
+        partitionRecord.setReplicaArrLength(replicaArrLen);
+
+        int replicas = batchReqBuffer.getInt();
+        System.out.println("replicas: " + replicas);
+        partitionRecord.setReplicas(replicas);
+
+        int inSyncReplicaLen = batchReqBuffer.get();
+        System.out.println("inSyncReplicaLen: " + inSyncReplicaLen);
+        partitionRecord.setInSyncReplicaLength(inSyncReplicaLen);
+
+        int inSyncReplicas = batchReqBuffer.getInt();
+        System.out.println("inSyncReplicas: " + inSyncReplicas);
+        partitionRecord.setInSyncReplicas(inSyncReplicas);
+
+        int removingArrLen = batchReqBuffer.get();
+        System.out.println("removingArrLen: " + removingArrLen);
+        partitionRecord.setRemovingReplicaArrLength(removingArrLen);
+
+        int addingReplicaLen = batchReqBuffer.get();
+        System.out.println("addingReplicaLen: " + addingReplicaLen);
+        partitionRecord.setAddingReplicaArrLength(addingReplicaLen);
+
+        int leader = batchReqBuffer.getInt();
+        System.out.println("leader: " + leader);
+        partitionRecord.setLeader(leader);
+
+        int leaderEpoch = batchReqBuffer.getInt();
+        System.out.println("leaderEpoch: " + leaderEpoch);
+        partitionRecord.setLeaderEpoch(leaderEpoch);
+
+        int partitionEpoch = batchReqBuffer.getInt();
+        System.out.println("partitionEpoch: " + partitionEpoch);
+        partitionRecord.setPartitionEpoch(partitionEpoch);
+
+        int directoryArrLen = batchReqBuffer.get();
+        System.out.println("directoryArrLen: " + directoryArrLen);
+        partitionRecord.setDirectoryArrLength(directoryArrLen);
+
+        byte[] directories = getNBytes(batchReqBuffer, 16);
+        System.out.println("directories: " + new String(directories));
+        partitionRecord.setDirectories(UUID.nameUUIDFromBytes(directories));
+
+        int taggedFields = batchReqBuffer.get();
+        System.out.println("taggedFields: " + taggedFields);
+        partitionRecord.setTaggedField(taggedFields);
+
+        return partitionRecord;
+
+    }
+
     private byte[] getNBytes(ByteBuffer buffer, int n) {
         byte[] bytes = new byte[n];
         for (int i = 0; i < n; i++) {
@@ -154,7 +216,6 @@ public class MetadataLogFileParser {
     }
 
     private FeatureLevelRecord getfeatureLevelRecord(ByteBuffer batchReqBuffer) {
-
         FeatureLevelRecord featureLevelRecord = new FeatureLevelRecord();
 
         int nameLength = batchReqBuffer.get();
@@ -171,5 +232,23 @@ public class MetadataLogFileParser {
         featureLevelRecord.setTaggedFieldsCount(taggedField);
 
         return featureLevelRecord;
+    }
+
+    private TopicRecord setTopicRecord(ByteBuffer batchReqBuffer) {
+        TopicRecord topicRecord = new TopicRecord();
+
+        int topicLength = batchReqBuffer.get();
+        System.out.println("nameLength: " + topicLength);
+        topicRecord.setLength(topicLength);
+        String name = new String(getNBytes(batchReqBuffer, topicLength - 1), StandardCharsets.UTF_8);
+        topicRecord.setTopicName(name);
+        System.out.println("topicName: " + name);
+        byte[] topicUUID = getNBytes(batchReqBuffer, 16);
+        topicRecord.setTopicUUID(UUID.nameUUIDFromBytes(topicUUID));
+        int taggedField = batchReqBuffer.get();
+        System.out.println("taggedField: " + taggedField);
+        topicRecord.setTaggedFieldsCount(taggedField);
+
+        return topicRecord;
     }
 }
