@@ -85,8 +85,7 @@ public class RequestParser {
 
     private  void describeTopicPartionsHandler(ByteBuffer reqBuffer,
                                                      OutputStream out,
-                                                     int correlationId)
-            throws IOException {
+                                                     int correlationId) throws IOException {
         System.out.println("Handling DescribeTopicPartition...");
 
 //        try (InputStream in = Files.newInputStream(Paths.get(FILE_PATH));

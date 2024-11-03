@@ -28,7 +28,7 @@ public class MetadataLogFileParser {
             System.out.println("partitionLeaderEpoch: " + partitionLeaderEpoch);
             short magicByte = batchReqBuffer.get();
             System.out.println("magicByte: " + magicByte);
-            int crc = batchReqBuffer.getInt();
+            long crc = Integer.toUnsignedLong(batchReqBuffer.getInt());
             System.out.println("crc: " + crc);
             short attributes = batchReqBuffer.getShort();
             System.out.println("attributes: " + attributes);
