@@ -128,8 +128,10 @@ public class MetadataLogFileParser {
                 recordData.setFeatureLevelRecord(getfeatureLevelRecord(batchReqBuffer));
                 break;
             case 3:
+                recordData.setFeatureLevelRecord(getfeatureLevelRecord(batchReqBuffer));
                 break;
             case 12:
+                recordData.setFeatureLevelRecord(getfeatureLevelRecord(batchReqBuffer));
                 break;
             default:
                 throw new RuntimeException("Illegal record type: " + recordType);
