@@ -91,7 +91,7 @@ public class MetadataLogFileParser {
 
         Record recordData = new Record();
 
-        int length = batchReqBuffer.get();
+        int length = parseVariantSigned(batchReqBuffer);
         System.out.println("length: " + length);
         recordData.setLength(length);
         int attribute = batchReqBuffer.get();
@@ -250,5 +250,25 @@ public class MetadataLogFileParser {
         topicRecord.setTaggedFieldsCount(taggedField);
 
         return topicRecord;
+    }
+
+    private int parseVariantSigned(ByteBuffer buffer) {
+
+        int result = 0;
+        int shift = 0;
+
+        while (buffer.hasRemaining()) {
+            byte b = buffer.get();
+
+            result |= (b & 0x7F) << shift;
+            shift += 7;
+
+
+            if ((b & 0x80) == 0) {
+                return (result >>> 1) ^ -(result & 1);
+            }
+        }
+
+        throw new IllegalArgumentException("Byte buffer does not contain a complete variant");
     }
 }
