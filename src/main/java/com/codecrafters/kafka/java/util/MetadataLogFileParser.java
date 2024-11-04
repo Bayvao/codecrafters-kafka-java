@@ -14,8 +14,6 @@ import java.util.UUID;
 
 public class MetadataLogFileParser {
 
-    Long b = 1726045943832L;
-
     private final String FILE_PATH = "/tmp/kraft-combined-logs/__cluster_metadata-0/00000000000000000000.log";
     public void parseMetadataLogFile(MetadataFileDTO metadataFileDTO) {
 
@@ -109,7 +107,7 @@ public class MetadataLogFileParser {
         String key = keyLength - 1 > 0 ? new String(getNBytes(batchReqBuffer, keyLength - 1), StandardCharsets.UTF_8) : null;
         System.out.println("key: " + key);
         recordData.setKey(key);
-        int valueLength = batchReqBuffer.get();
+        int valueLength = parseVariantSigned(batchReqBuffer);
         System.out.println("valueLength: " + valueLength);
         recordData.setValueLength(valueLength);
         int frameVersion = batchReqBuffer.get();
@@ -155,7 +153,7 @@ public class MetadataLogFileParser {
         System.out.println("topicUUID: " + new String(topicUUID));
         partitionRecord.setTopicUUID(UUID.nameUUIDFromBytes(topicUUID));
 
-        int replicaArrLen = batchReqBuffer.get();
+        int replicaArrLen = parseVarintUnsigned(batchReqBuffer);
         System.out.println("replicaArrLen: " + replicaArrLen);
         partitionRecord.setReplicaArrLength(replicaArrLen);
 
@@ -163,7 +161,7 @@ public class MetadataLogFileParser {
         System.out.println("replicas: " + replicas);
         partitionRecord.setReplicas(replicas);
 
-        int inSyncReplicaLen = batchReqBuffer.get();
+        int inSyncReplicaLen = parseVarintUnsigned(batchReqBuffer);
         System.out.println("inSyncReplicaLen: " + inSyncReplicaLen);
         partitionRecord.setInSyncReplicaLength(inSyncReplicaLen);
 
@@ -171,11 +169,11 @@ public class MetadataLogFileParser {
         System.out.println("inSyncReplicas: " + inSyncReplicas);
         partitionRecord.setInSyncReplicas(inSyncReplicas);
 
-        int removingArrLen = batchReqBuffer.get();
+        int removingArrLen = parseVarintUnsigned(batchReqBuffer);
         System.out.println("removingArrLen: " + removingArrLen);
         partitionRecord.setRemovingReplicaArrLength(removingArrLen);
 
-        int addingReplicaLen = batchReqBuffer.get();
+        int addingReplicaLen = parseVarintUnsigned(batchReqBuffer);
         System.out.println("addingReplicaLen: " + addingReplicaLen);
         partitionRecord.setAddingReplicaArrLength(addingReplicaLen);
 
@@ -191,7 +189,7 @@ public class MetadataLogFileParser {
         System.out.println("partitionEpoch: " + partitionEpoch);
         partitionRecord.setPartitionEpoch(partitionEpoch);
 
-        int directoryArrLen = batchReqBuffer.get();
+        int directoryArrLen = parseVarintUnsigned(batchReqBuffer);
         System.out.println("directoryArrLen: " + directoryArrLen);
         partitionRecord.setDirectoryArrLength(directoryArrLen);
 
@@ -269,6 +267,24 @@ public class MetadataLogFileParser {
             }
         }
 
-        throw new IllegalArgumentException("Byte buffer does not contain a complete variant");
+        throw new IllegalArgumentException("Byte buffer does not contain a complete signed variant");
     }
+
+    public int parseVarintUnsigned(ByteBuffer buffer) {
+        int result = 0;
+        int shift = 0;
+
+        while (buffer.hasRemaining()) {
+            byte b = buffer.get();
+
+            result |= (b & 0x7F) << shift;
+            shift += 7;
+
+            if ((b & 0x80) == 0) {
+                return result - 1;
+            }
+        }
+
+        throw new IllegalArgumentException("Byte buffer does not contain a complete unsigned varint");
+     }
 }
